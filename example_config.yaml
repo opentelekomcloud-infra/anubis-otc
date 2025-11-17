@@ -133,6 +133,24 @@ bots:
     action: WEIGH
     weight:
       adjust: -5
+  
+  - name: chrome-without-client-hints
+    expression:
+      all:
+        - userAgent.contains("Chrome")
+        - '!("Sec-Ch-Ua" in headers)'
+    action: WEIGH
+    weight:
+      adjust: 10
+
+  - name: chrome-without-sec-fetch
+    expression:
+      all:
+        - userAgent.contains("Chrome")
+        - '!("Sec-Fetch-Site" in headers)'
+    action: WEIGH
+    weight:
+      adjust: 10
 
   - name: should-have-accept
     expression: '!("Accept" in headers)'
