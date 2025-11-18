@@ -1,5 +1,48 @@
 # Anubis
 
+Build local Anubis image
+```
+# from Anubis repo root
+docker run --rm -it \
+  -v "$PWD":/src \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -w /src \
+  golang:1.24-alpine \
+  sh -lc '
+    set -euo pipefail
+
+    # Go toolchain
+    export PATH="$PATH:/usr/local/go/bin"
+    go version
+
+    # Tools needed by Anubis build
+    apk add --no-cache \
+      git \
+      ca-certificates \
+      build-base \
+      nodejs \
+      npm \
+      bash \
+      zstd \
+      brotli
+
+    # Git safe.directory for bind mount
+    git config --global --add safe.directory /src
+
+    # Install ko (correct module path)
+    GOBIN=/usr/local/bin go install github.com/google/ko@latest
+
+    # JS deps + assets
+    npm install
+    npm run assets
+
+    # Build container image locally via ko (no remote push)
+    npm run container -- \
+      --docker-repo ko.local/sgode/anubis \
+      --docker-tags ko.local/sgode/anubis:dev
+  '
+```
+
 <center>
 <img width=256 src="./web/static/img/happy.webp" alt="A smiling chibi dark-skinned anthro jackal with brown hair and tall ears looking victorious with a thumbs-up" />
 </center>
