@@ -1,3 +1,4 @@
+
 acs
 Actorified
 actorifiedstore
@@ -13,6 +14,7 @@ apnic
 APNICRANDNETAU
 Applebot
 archlinux
+arpa
 asnc
 asnchecker
 asns
@@ -85,6 +87,7 @@ distros
 dnf
 dnsbl
 dnserr
+DNSTTL
 domainhere
 dracula
 dronebl
@@ -106,7 +109,10 @@ externalfetcher
 extldflags
 facebookgo
 Factset
+fahedouch
 fastcgi
+FCr
+fcrdns
 fediverse
 ffprobe
 financials
@@ -156,7 +162,6 @@ hostable
 htmlc
 htmx
 httpdebug
-Huawei
 huawei
 hypertext
 iaskspider
@@ -194,12 +199,14 @@ lcj
 ldflags
 letsencrypt
 Lexentale
+lfc
 lgbt
 licend
 licstart
 lightpanda
 limsa
 Linting
+listor
 LLU
 loadbalancer
 lol
@@ -217,6 +224,10 @@ mnt
 Mojeek
 mojeekbot
 mozilla
+myclient
+mymaster
+mypass
+myuser
 nbf
 nepeat
 netsurf
@@ -233,6 +244,7 @@ oklch
 omgili
 omgilibot
 openai
+opendns
 opengraph
 openrc
 oswald
@@ -267,11 +279,11 @@ qwantbot
 rac
 rawler
 rcvar
-rdb
 redhat
 redir
 redirectscheme
 refactors
+remoteip
 reputational
 risc
 ruleset
@@ -298,6 +310,7 @@ simprint
 sitemap
 sls
 sni
+snipster
 Spambot
 sparkline
 spyderbot
@@ -318,6 +331,7 @@ tbn
 tbr
 techaro
 techarohq
+telegrambot
 templ
 templruntime
 testarea
@@ -341,7 +355,9 @@ valkey
 Varis
 Velen
 vendored
+verify
 vhosts
+vkbot
 VKE
 vnd
 VPS
@@ -357,7 +373,6 @@ wildbase
 withthothmock
 wolfbeast
 wordpress
-Workaround
 workaround
 workdir
 wpbot

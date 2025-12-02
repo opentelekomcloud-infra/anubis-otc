@@ -332,6 +332,8 @@ type fileConfig struct {
 	Thresholds  []Threshold         `json:"thresholds"`
 	StatusCodes StatusCodes         `json:"status_codes"`
 	DNSBL       bool                `json:"dnsbl"`
+	DNSTTL      DnsTTL              `json:"dns_ttl"`
+	Logging     *Logging            `json:"logging"`
 }
 
 func (c *fileConfig) Valid() error {
@@ -363,6 +365,10 @@ func (c *fileConfig) Valid() error {
 		}
 	}
 
+	if err := c.Logging.Valid(); err != nil {
+		errs = append(errs, err)
+	}
+
 	if c.Store != nil {
 		if err := c.Store.Valid(); err != nil {
 			errs = append(errs, err)
@@ -382,9 +388,14 @@ func Load(fin io.Reader, fname string) (*Config, error) {
 			Challenge: http.StatusOK,
 			Deny:      http.StatusOK,
 		},
+		DNSTTL: DnsTTL{
+			Forward: 300,
+			Reverse: 300,
+		},
 		Store: &Store{
 			Backend: "memory",
 		},
+		Logging: (Logging{}).Default(),
 	}
 
 	if err := yaml.NewYAMLToJSONDecoder(fin).Decode(&c); err != nil {
@@ -396,7 +407,8 @@ func Load(fin io.Reader, fname string) (*Config, error) {
 	}
 
 	result := &Config{
-		DNSBL: c.DNSBL,
+		DNSBL:  c.DNSBL,
+		DNSTTL: c.DNSTTL,
 		OpenGraph: OpenGraph{
 			Enabled:      c.OpenGraph.Enabled,
 			ConsiderHost: c.OpenGraph.ConsiderHost,
@@ -404,6 +416,7 @@ func Load(fin io.Reader, fname string) (*Config, error) {
 		},
 		StatusCodes: c.StatusCodes,
 		Store:       c.Store,
+		Logging:     c.Logging,
 	}
 
 	if c.OpenGraph.TimeToLive != "" {
@@ -462,6 +475,29 @@ func Load(fin io.Reader, fname string) (*Config, error) {
 	return result, nil
 }
 
+type DnsTTL struct {
+	Forward int `json:"forward"`
+	Reverse int `json:"reverse"`
+}
+
+func (sc DnsTTL) Valid() error {
+	var errs []error
+
+	if sc.Forward < 0 {
+		errs = append(errs, fmt.Errorf("%w: forward TTL is %d", ErrStatusCodeNotValid, sc.Forward))
+	}
+
+	if sc.Reverse < 0 {
+		errs = append(errs, fmt.Errorf("%w: reverse TTL is %d", ErrStatusCodeNotValid, sc.Reverse))
+	}
+
+	if len(errs) != 0 {
+		return fmt.Errorf("dns TTL values not valid:\n%w", errors.Join(errs...))
+	}
+
+	return nil
+}
+
 type Config struct {
 	Impressum   *Impressum
 	Store       *Store
@@ -469,7 +505,9 @@ type Config struct {
 	Bots        []BotConfig
 	Thresholds  []Threshold
 	StatusCodes StatusCodes
+	Logging     *Logging
 	DNSBL       bool
+	DNSTTL      DnsTTL
 }
 
 func (c Config) Valid() error {

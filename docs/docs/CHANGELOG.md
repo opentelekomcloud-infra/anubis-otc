@@ -21,8 +21,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow Renovate as an OCI registry client.
 - Properly handle 4in6 addresses so that IP matching works with those addresses.
 - Add support to simple Valkey/Redis cluster mode
-- Open Graph passthrough now reuses the configured target Host/SNI/TLS settings, so metadata fetches succeed when the upstream certificate differs from the public domain. ([1283](https://github.com/TecharoHQ/anubis/pull/1283)) 
+- Open Graph passthrough now reuses the configured target Host/SNI/TLS settings, so metadata fetches succeed when the upstream certificate differs from the public domain. ([1283](https://github.com/TecharoHQ/anubis/pull/1283))
 - Stabilize the CVE-2025-24369 regression test by always submitting an invalid proof instead of relying on random POW failures.
+
+### Deprecate `report_as` in challenge configuration
+
+Previously Anubis let you lie to users about the difficulty of a challenge to interfere with operators of malicious scrapers as a psychological attack:
+
+```yaml
+bots:
+  # Punish any bot with "bot" in the user-agent string
+  # This is known to have a high false-positive rate, use at your own risk
+  - name: generic-bot-catchall
+    user_agent_regex: (?i:bot|crawler)
+    action: CHALLENGE
+    challenge:
+      difficulty: 16 # impossible
+      report_as: 4 # lie to the operator
+      algorithm: slow # intentionally waste CPU cycles and time
+```
+
+This has turned out to be a bad idea because it has caused massive user experience problems and has been removed. If you are using this setting, you will get a warning in your logs like this:
+
+```json
+{
+  "time": "2025-11-25T23:10:31.092201549-05:00",
+  "level": "WARN",
+  "source": {
+    "function": "github.com/TecharoHQ/anubis/lib/policy.ParseConfig",
+    "file": "/home/xe/code/TecharoHQ/anubis/lib/policy/policy.go",
+    "line": 201
+  },
+  "msg": "use of deprecated report_as setting detected, please remove this from your policy file when possible",
+  "at": "config-validate",
+  "name": "mild-suspicion"
+}
+```
+
+To remove this warning, remove this setting from your policy file.
+
+### Logging customization
+
+Anubis now supports the ability to log to multiple backends ("sinks"). This allows you to have Anubis [log to a file](./admin/policies.mdx#file-sink) instead of just logging to standard out. You can also customize the [logging level](./admin/policies.mdx#log-levels) in the policy file:
+
+```yaml
+logging:
+  level: "warn" # much less verbose logging
+  sink: file # log to a file
+  parameters:
+    file: "./var/anubis.log"
+    maxBackups: 3 # keep at least 3 old copies
+    maxBytes: 67108864 # each file can have up to 64 Mi of logs
+    maxAge: 7 # rotate files out every n days
+    oldFileTimeFormat: 2006-01-02T15-04-05 # RFC 3339-ish
+    compress: true # gzip-compress old log files
+    useLocalTime: false # timezone for rotated files is UTC
+```
+
+Additionally, information about [how Anubis uses each logging level](./admin/policies.mdx#log-levels) has been added to the documentation.
+
+### DNS Features
+
+- CEL expressions for:
+  - FCrDNS checks
+  - Forward DNS queries
+  - Reverse DNS queries
+  - `arpaReverseIP` to transform IPv4/6 addresses into ARPA reverse IP notation.
+  - `regexSafe` to escape regex special characters (useful for including `remoteAddress` or headers in regular expressions).
+- DNS cache and other optimizations to minimize unnecessary DNS queries.
+
+The DNS cache TTL can be changed in the bots config like this:
+```yaml
+dns_ttl:
+  forward: 600
+  reverse: 600
+```
+The default value for both forward and reverse queries is 300 seconds.
+
+The `verifyFCrDNS` CEL function has two overloads:
+- `(addr)`
+  Simply verifies that the remote side has PTR records pointing to the target address.
+- `(addr, ptrPattern)`
+  Verifies that the remote side refers to a specific domain and that this domain points to the target IP.
+
 
 ## v1.23.1: Lyse Hext - Echo 1
 
