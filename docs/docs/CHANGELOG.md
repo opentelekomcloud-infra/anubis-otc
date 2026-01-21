@@ -11,7 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Add iplist2rule tool that lets admins turn an IP address blocklist into an Anubis ruleset.
+- Add Polish locale ([#1292](https://github.com/TecharoHQ/anubis/pull/1309))
+- Fix honeypot and imprint links missing `BASE_PREFIX` when deployed behind a path prefix ([#1402](https://github.com/TecharoHQ/anubis/issues/1402))
+
 <!-- This changes the project to: -->
+
+## v1.24.0: Y'shtola Rhul
+
+Anubis is back and better than ever! Lots of minor fixes with some big ones interspersed.
 
 - Fix panic when validating challenges after privacy-mode browsers strip headers and the follow-up request matches an `ALLOW` threshold.
 - Expose WEIGHT rule matches as Prometheus metrics.
@@ -23,6 +31,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support to simple Valkey/Redis cluster mode
 - Open Graph passthrough now reuses the configured target Host/SNI/TLS settings, so metadata fetches succeed when the upstream certificate differs from the public domain. ([1283](https://github.com/TecharoHQ/anubis/pull/1283))
 - Stabilize the CVE-2025-24369 regression test by always submitting an invalid proof instead of relying on random POW failures.
+- Refine the check that ensures the presence of the Accept header to avoid breaking docker clients.
+- Removed rules intended to reward actual browsers due to abuse in the wild.
+
+### Dataset poisoning
+
+Anubis has the ability to engage in [dataset poisoning attacks](https://www.anthropic.com/research/small-samples-poison) using the [dataset poisoning subsystem](./admin/honeypot/overview.mdx). This allows every Anubis instance to be a honeypot to attract and flag abusive scrapers so that no administrator action is required to ban them.
+
+There is much more information about this feature in [the dataset poisoning subsystem documentation](./admin/honeypot/overview.mdx). Administrators that are interested in learning how this feature works should consult that documentation.
 
 ### Deprecate `report_as` in challenge configuration
 
@@ -91,19 +107,21 @@ Additionally, information about [how Anubis uses each logging level](./admin/pol
 - DNS cache and other optimizations to minimize unnecessary DNS queries.
 
 The DNS cache TTL can be changed in the bots config like this:
+
 ```yaml
 dns_ttl:
   forward: 600
   reverse: 600
 ```
+
 The default value for both forward and reverse queries is 300 seconds.
 
 The `verifyFCrDNS` CEL function has two overloads:
+
 - `(addr)`
   Simply verifies that the remote side has PTR records pointing to the target address.
 - `(addr, ptrPattern)`
   Verifies that the remote side refers to a specific domain and that this domain points to the target IP.
-
 
 ## v1.23.1: Lyse Hext - Echo 1
 
